@@ -10,7 +10,6 @@ int draw_state = 0;
 //tänne tallennetaan jokaisen janan risteyspisteet
 PVector[][] intersection_list = new PVector[100][100];
 
-
 void setup() {
   size(1024, 768);
   background(124);
@@ -72,6 +71,7 @@ void mouseReleased() {
             intersection_list[b][a] = intersection_vector;
             
             // testi
+            fill(255);
             ellipse(intersection_list[b][a].x, intersection_list[b][a].y, 10, 10);
             print(intersection_list[b][a].x, intersection_list[b][a].y, " - ");
           }
