@@ -51,16 +51,12 @@ void mouseReleased() {
 
     draw_state = 0;
     
-    //luodaan hiirennapsausten perusteella kontrolliviivaobjekti
-    for (int h = 0; h < 4;  h++) { println(mouse_clicks[h]); }
-    
+    //luodaan hiirennapsausten perusteella uusi kontrolliviivaobjekti
     line_storage.addLine();    
     
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
-
-    
-    for (int a = 0; a <= control_line_count; a++) {
-      for (int b = 0; b <= control_line_count; b++) {
+    for (int  a = 0; a < line_storage.line_list.size(); a++) {
+      for (int b = 0; b < line_storage.line_list.size(); b++) {
         if (a != b) {
           
           float[] intersection_array = new float[3];
@@ -68,10 +64,14 @@ void mouseReleased() {
           
           // Ajetaan funktio joka tunnistaa ja hakee intersektiot
           intersection_array = intersect(
-          control_line[0][a], control_line[1][a],
-          control_line[2][a], control_line[3][a],
-          control_line[0][b], control_line[1][b],
-          control_line[2][b], control_line[3][b]
+          line_storage.line_list.get(a).start.x,
+          line_storage.line_list.get(a).start.y,
+          line_storage.line_list.get(a).end.x,
+          line_storage.line_list.get(a).end.y,
+          line_storage.line_list.get(b).start.x,
+          line_storage.line_list.get(b).start.y,
+          line_storage.line_list.get(b).end.x,
+          line_storage.line_list.get(b).end.y
           );
           
           intersection_vector.x = intersection_array[0];
