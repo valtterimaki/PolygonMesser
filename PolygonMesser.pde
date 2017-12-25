@@ -1,11 +1,17 @@
 //tänne tallennetaan viivojen datat OBS
 int[][] control_line = new int[4][100];
 
+//systeemi jossa kontrolliviivat elää
+controlLineSystem line_storage;
+
 //viivojen määrä
 int control_line_count = 0;
 
 //piirretäänkö alku- vai päätepistettä
 int draw_state = 0;
+
+//tilapäinen hiirennapsauskoordinaattitallete
+float[] mouse_clicks;
 
 //tänne tallennetaan jokaisen janan risteyspisteet
 PVector[][] intersection_list = new PVector[100][100];
@@ -32,8 +38,8 @@ void mouseReleased() {
   if (draw_state == 0) {
     
     //lisätään alkupiste arrayyn
-    control_line[0][control_line_count] = mouseX;
-    control_line[1][control_line_count] = mouseY;    
+    mouse_clicks[0] = mouseX;
+    mouse_clicks[1] = mouseY;    
 
     draw_state = 1;
   } 
@@ -41,12 +47,16 @@ void mouseReleased() {
   else if (draw_state == 1) {
     
     //lisätään päätepiste arrayyn
-    control_line[2][control_line_count] = mouseX;
-    control_line[3][control_line_count] = mouseY;  
+    mouse_clicks[2] = mouseX;
+    mouse_clicks[3] = mouseY;    
 
     draw_state = 0;
     
+    //luodaan hiirennapsausten perusteella kontrolliviivaobjekti
+    line_storage.addLine();    
+    
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
+
     
     for (int a = 0; a <= control_line_count; a++) {
       for (int b = 0; b <= control_line_count; b++) {
@@ -86,23 +96,21 @@ void mouseReleased() {
 }
 
 
-// FUNCTIONS AND CLASSES
+/* FUNCTIONS AND CLASSES */
 
 
-// Kontrolliviivaobjektien luonti
-// Viivalla on alku- ja loppupisteet ja järjestysnumero
+// Kontrolliviivaobjekti
+// Viivalla on alku- ja loppupisteet (mahd myöh numero jos tarve)
 
 class controlLine { 
   PVector start = new PVector();
   PVector end = new PVector();
-  int number;
   
-  controlLine ( float s_x, float s_y, float e_x, float e_y, int n) {  
+  controlLine ( float s_x, float s_y, float e_x, float e_y) {  
     start.x = s_x; 
     start.y = s_y;
     end.x = e_x;
     end.y = e_y;
-    number = n;
   } 
   
   void update() { 
@@ -115,6 +123,20 @@ class controlLine {
   }
   
 } 
+
+//systeemi viivaobjekteille
+
+class controlLineSystem {
+  ArrayList<controlLine> line_list;
+
+  controlLineSystem() {
+    line_list = new ArrayList<controlLine>();
+  }
+
+  void addLine() {
+    line_list.add(new controlLine(mouse_clicks[0],mouse_clicks[1] ,mouse_clicks[2] ,mouse_clicks[3]));
+  }
+}
 
 
 // Intersektion etsintä (pöllitty koodi)
