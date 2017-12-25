@@ -2,7 +2,7 @@
 controlLineSystem line_storage;
 
 //containeri jossa intersektiot elää
-controlLineSystem intersection_storage;
+intersectionSystem intersection_storage;
 
 //tänne tallennetaan jokaisen janan risteyspisteet KORVATAAN kohta
 PVector[][] intersection_list = new PVector[100][100];
@@ -19,6 +19,7 @@ void setup() {
   background(124);
   
   line_storage = new controlLineSystem();
+  intersection_storage = new intersectionSystem();
 }
 
 void draw() {
@@ -27,6 +28,7 @@ void draw() {
   
   //piirretään viivat
    line_storage.run();
+   intersection_storage.run();
     
 }
 
@@ -50,45 +52,38 @@ void mouseReleased() {
     draw_state = 0;
     
     //luodaan hiirennapsausten perusteella uusi kontrolliviivaobjekti
-    line_storage.addLine();    
+    line_storage.addObject();    
     
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
     for (int  a = 0; a < line_storage.objects.size(); a++) {
-      for (int b = 0; b < line_storage.objects.size(); b++) {
-        if (a != b) {
-          
-          float[] intersection_array = new float[3];
-          PVector intersection_vector = new PVector();
-          
-          // Ajetaan funktio joka tunnistaa ja hakee intersektiot
-          intersection_array = intersect(
-          line_storage.objects.get(a).start.x,
-          line_storage.objects.get(a).start.y,
-          line_storage.objects.get(a).end.x,
-          line_storage.objects.get(a).end.y,
-          line_storage.objects.get(b).start.x,
-          line_storage.objects.get(b).start.y,
-          line_storage.objects.get(b).end.x,
-          line_storage.objects.get(b).end.y
-          );
-          
-          intersection_vector.x = intersection_array[0];
-          intersection_vector.y = intersection_array[1];          
-          
-          // JOS intersektio löytyy, tungetaan se listaan
-          if (intersection_array[2] == 1) {
-            intersection_list[b][a] = intersection_vector;
-            
-            // testi
-            fill(255);
-            ellipse(intersection_list[b][a].x, intersection_list[b][a].y, 10, 10);
-            print(intersection_list[b][a].x, intersection_list[b][a].y, " - ");
-          }
+      for (int b = a+1 ; b < line_storage.objects.size(); b++) {
+     
+        float[] intersection_array = new float[3];
+        PVector intersection_vector = new PVector();
+        
+        // Ajetaan funktio joka tunnistaa ja hakee intersektiot
+        intersection_array = intersect(
+        line_storage.objects.get(a).start.x,
+        line_storage.objects.get(a).start.y,
+        line_storage.objects.get(a).end.x,
+        line_storage.objects.get(a).end.y,
+        line_storage.objects.get(b).start.x,
+        line_storage.objects.get(b).start.y,
+        line_storage.objects.get(b).end.x,
+        line_storage.objects.get(b).end.y
+        );
+        
+        intersection_vector.x = intersection_array[0];
+        intersection_vector.y = intersection_array[1];          
+        
+        // JOS intersektio löytyy, luodaan intersektio-objekti
+        if (intersection_array[2] == 1) {
+          intersection_storage.addObject(intersection_vector.x, intersection_vector.y, a, b);  
+          println(a+" "+b);
         }
       }    
     }
   }
-  
 }
 
 
@@ -123,6 +118,38 @@ class controlLine {
   }
 } 
 
+// Intersektio-objekti
+
+class intersectionObject { 
+  PVector coords = new PVector();
+  int parent_a, parent_b;
+  
+  intersectionObject ( float x, float y, int a, int b) {  
+    coords.x = x;
+    coords.y = y;
+    parent_a = a;
+    parent_b = b;
+  } 
+  
+  void run() {
+    update();
+    display();
+  }
+  
+  void update() { 
+  }
+  
+  void display() {
+    stroke(0);
+    fill(255);
+    ellipse(coords.x, coords.y, 10, 10);
+    textSize(24);
+    text(parent_a, coords.x+20, coords.y);
+    text(parent_b, coords.x+50, coords.y);
+  }
+} 
+
+
 //systeemi viivaobjekteille
 
 class controlLineSystem {
@@ -132,7 +159,7 @@ class controlLineSystem {
     objects = new ArrayList<controlLine>();
   }
 
-  void addLine() {
+  void addObject() {
     objects.add(new controlLine(mouse_clicks[0], mouse_clicks[1], mouse_clicks[2], mouse_clicks[3]));
   }
   
@@ -144,6 +171,26 @@ class controlLineSystem {
   }
 }
 
+//systeemi intersektioille
+
+class intersectionSystem {
+  ArrayList<intersectionObject> objects;
+
+  intersectionSystem() {
+    objects = new ArrayList<intersectionObject>();
+  }
+
+  void addObject(float x, float y, int a, int b) {
+    objects.add(new intersectionObject(x, y, a, b));
+  }
+  
+  void run() {
+    for (int i = objects.size()-1; i >= 0; i--) {
+      intersectionObject x = objects.get(i);
+      x.run();
+    }
+  }
+}
 
 // Intersektion etsintä (pöllitty koodi)
 
