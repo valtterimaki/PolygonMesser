@@ -1,4 +1,4 @@
-//tänne tallennetaan viivojen datat
+//tänne tallennetaan viivojen datat OBS
 int[][] control_line = new int[4][100];
 
 //viivojen määrä
@@ -86,6 +86,9 @@ void mouseReleased() {
 }
 
 
+// FUNCTIONS AND CLASSES
+
+
 // Kontrolliviivaobjektien luonti
 // Viivalla on alku- ja loppupisteet ja järjestysnumero
 
@@ -106,10 +109,15 @@ class controlLine {
 
   }
   
+  void display() {
+    stroke(255,0,0);
+    line(start.x, start.y, end.x, end.y);
+  }
+  
 } 
 
 
-// PÖLLITTY (ja muokattu) KOODI, ETSII INTERSEKTIOT
+// Intersektion etsintä (pöllitty koodi)
 
 float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4){
 
