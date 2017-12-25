@@ -11,7 +11,7 @@ int control_line_count = 0;
 int draw_state = 0;
 
 //tilapäinen hiirennapsauskoordinaattitallete
-float[] mouse_clicks;
+float[] mouse_clicks = new float[4];
 
 //tänne tallennetaan jokaisen janan risteyspisteet
 PVector[][] intersection_list = new PVector[100][100];
@@ -19,6 +19,8 @@ PVector[][] intersection_list = new PVector[100][100];
 void setup() {
   size(1024, 768);
   background(124);
+  
+  line_storage = new controlLineSystem();
 }
 
 void draw() {
@@ -26,10 +28,7 @@ void draw() {
   //background(124);
   
   //piirretään viivat
-  for (int i = 0; i < control_line_count; i++) {
-    stroke(0);
-    line(control_line[0][i],control_line[1][i],control_line[2][i],control_line[3][i]);
-  }
+   line_storage.run();
     
 }
 
@@ -53,6 +52,8 @@ void mouseReleased() {
     draw_state = 0;
     
     //luodaan hiirennapsausten perusteella kontrolliviivaobjekti
+    for (int h = 0; h < 4;  h++) { println(mouse_clicks[h]); }
+    
     line_storage.addLine();    
     
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
@@ -113,15 +114,18 @@ class controlLine {
     end.y = e_y;
   } 
   
+  void run() {
+    update();
+    display();
+  }
+  
   void update() { 
-
   }
   
   void display() {
     stroke(255,0,0);
     line(start.x, start.y, end.x, end.y);
   }
-  
 } 
 
 //systeemi viivaobjekteille
@@ -134,7 +138,14 @@ class controlLineSystem {
   }
 
   void addLine() {
-    line_list.add(new controlLine(mouse_clicks[0],mouse_clicks[1] ,mouse_clicks[2] ,mouse_clicks[3]));
+    line_list.add(new controlLine(mouse_clicks[0], mouse_clicks[1], mouse_clicks[2], mouse_clicks[3]));
+  }
+  
+  void run() {
+    for (int i = line_list.size()-1; i >= 0; i--) {
+      controlLine x = line_list.get(i);
+      x.run();
+    }
   }
 }
 
