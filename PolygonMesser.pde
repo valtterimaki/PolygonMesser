@@ -86,6 +86,29 @@ void mouseReleased() {
 }
 
 
+// Kontrolliviivaobjektien luonti
+// Viivalla on alku- ja loppupisteet ja järjestysnumero
+
+class controlLine { 
+  PVector start = new PVector();
+  PVector end = new PVector();
+  int number;
+  
+  controlLine ( float s_x, float s_y, float e_x, float e_y, int n) {  
+    start.x = s_x; 
+    start.y = s_y;
+    end.x = e_x;
+    end.y = e_y;
+    number = n;
+  } 
+  
+  void update() { 
+
+  }
+  
+} 
+
+
 // PÖLLITTY (ja muokattu) KOODI, ETSII INTERSEKTIOT
 
 float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4){
@@ -171,7 +194,6 @@ float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, fl
   intersection_output[2] = 1;
   return intersection_output;
 }
-
 
 boolean same_sign(float a, float b){
   return (( a * b) >= 0);
