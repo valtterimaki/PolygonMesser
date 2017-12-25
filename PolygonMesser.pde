@@ -1,11 +1,11 @@
-//tänne tallennetaan viivojen datat OBS
-int[][] control_line = new int[4][100];
-
-//systeemi jossa kontrolliviivat elää
+//containeri jossa kontrolliviivat elää
 controlLineSystem line_storage;
 
-//viivojen määrä
-int control_line_count = 0;
+//containeri jossa intersektiot elää
+controlLineSystem intersection_storage;
+
+//tänne tallennetaan jokaisen janan risteyspisteet KORVATAAN kohta
+PVector[][] intersection_list = new PVector[100][100];
 
 //piirretäänkö alku- vai päätepistettä
 int draw_state = 0;
@@ -13,8 +13,6 @@ int draw_state = 0;
 //tilapäinen hiirennapsauskoordinaattitallete
 float[] mouse_clicks = new float[4];
 
-//tänne tallennetaan jokaisen janan risteyspisteet
-PVector[][] intersection_list = new PVector[100][100];
 
 void setup() {
   size(1024, 768);
@@ -55,8 +53,8 @@ void mouseReleased() {
     line_storage.addLine();    
     
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
-    for (int  a = 0; a < line_storage.line_list.size(); a++) {
-      for (int b = 0; b < line_storage.line_list.size(); b++) {
+    for (int  a = 0; a < line_storage.objects.size(); a++) {
+      for (int b = 0; b < line_storage.objects.size(); b++) {
         if (a != b) {
           
           float[] intersection_array = new float[3];
@@ -64,14 +62,14 @@ void mouseReleased() {
           
           // Ajetaan funktio joka tunnistaa ja hakee intersektiot
           intersection_array = intersect(
-          line_storage.line_list.get(a).start.x,
-          line_storage.line_list.get(a).start.y,
-          line_storage.line_list.get(a).end.x,
-          line_storage.line_list.get(a).end.y,
-          line_storage.line_list.get(b).start.x,
-          line_storage.line_list.get(b).start.y,
-          line_storage.line_list.get(b).end.x,
-          line_storage.line_list.get(b).end.y
+          line_storage.objects.get(a).start.x,
+          line_storage.objects.get(a).start.y,
+          line_storage.objects.get(a).end.x,
+          line_storage.objects.get(a).end.y,
+          line_storage.objects.get(b).start.x,
+          line_storage.objects.get(b).start.y,
+          line_storage.objects.get(b).end.x,
+          line_storage.objects.get(b).end.y
           );
           
           intersection_vector.x = intersection_array[0];
@@ -89,9 +87,6 @@ void mouseReleased() {
         }
       }    
     }
-    
-    //kasvatetaan viivojen määrälukua
-    control_line_count++;
   }
   
 }
@@ -131,19 +126,19 @@ class controlLine {
 //systeemi viivaobjekteille
 
 class controlLineSystem {
-  ArrayList<controlLine> line_list;
+  ArrayList<controlLine> objects;
 
   controlLineSystem() {
-    line_list = new ArrayList<controlLine>();
+    objects = new ArrayList<controlLine>();
   }
 
   void addLine() {
-    line_list.add(new controlLine(mouse_clicks[0], mouse_clicks[1], mouse_clicks[2], mouse_clicks[3]));
+    objects.add(new controlLine(mouse_clicks[0], mouse_clicks[1], mouse_clicks[2], mouse_clicks[3]));
   }
   
   void run() {
-    for (int i = line_list.size()-1; i >= 0; i--) {
-      controlLine x = line_list.get(i);
+    for (int i = objects.size()-1; i >= 0; i--) {
+      controlLine x = objects.get(i);
       x.run();
     }
   }
