@@ -13,75 +13,77 @@ int draw_state = 0;
 //tilapäinen hiirennapsauskoordinaattitallete
 float[] mouse_clicks = new float[4];
 
+ArrayList<intersectionObject> polycoords;
+
 
 void setup() {
   size(1024, 768);
   background(124);
-  
+
   line_storage = new controlLineSystem();
   intersection_storage = new intersectionSystem();
+
 }
 
 void draw() {
   //tyhjennä ruutu
   //background(124);
-  
+
   //piirretään viivat
-   line_storage.run();
-   intersection_storage.run();
-    
+  line_storage.run();
+  intersection_storage.run();
 }
 
 void mouseReleased() {  
 
   if (draw_state == 0) {
-    
+
     //lisätään alkupiste arrayyn
     mouse_clicks[0] = mouseX;
     mouse_clicks[1] = mouseY;    
 
     draw_state = 1;
-  } 
-  
-  else if (draw_state == 1) {
-    
+  } else if (draw_state == 1) {
+
     //lisätään päätepiste arrayyn
     mouse_clicks[2] = mouseX;
     mouse_clicks[3] = mouseY;    
 
     draw_state = 0;
-    
-    //luodaan hiirennapsausten perusteella uusi kontrolliviivaobjekti
+
+    //luodaan hiirennapsausten perusteella uusi kontrolliviivaobjekti ja intersektio-objektit päätyjen perusteella
     line_storage.addObject();    
-    
+    intersection_storage.addObject(mouse_clicks[0], mouse_clicks[1], line_storage.objects.size()-1, line_storage.objects.size()-1, true, false);
+    intersection_storage.addObject(mouse_clicks[2], mouse_clicks[3], line_storage.objects.size()-1, line_storage.objects.size()-1, false, true);
+
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
     for (int  a = 0; a < line_storage.objects.size(); a++) {
-      for (int b = a+1 ; b < line_storage.objects.size(); b++) {
-     
+      for (int b = a+1; b < line_storage.objects.size(); b++) {
+
         float[] intersection_array = new float[3];
         PVector intersection_vector = new PVector();
-        
+
         // Ajetaan funktio joka tunnistaa ja hakee intersektiot
         intersection_array = intersect(
-        line_storage.objects.get(a).start.x,
-        line_storage.objects.get(a).start.y,
-        line_storage.objects.get(a).end.x,
-        line_storage.objects.get(a).end.y,
-        line_storage.objects.get(b).start.x,
-        line_storage.objects.get(b).start.y,
-        line_storage.objects.get(b).end.x,
-        line_storage.objects.get(b).end.y
-        );
-        
+          line_storage.objects.get(a).start.x, 
+          line_storage.objects.get(a).start.y, 
+          line_storage.objects.get(a).end.x, 
+          line_storage.objects.get(a).end.y, 
+          line_storage.objects.get(b).start.x, 
+          line_storage.objects.get(b).start.y, 
+          line_storage.objects.get(b).end.x, 
+          line_storage.objects.get(b).end.y
+          );
+
         intersection_vector.x = intersection_array[0];
         intersection_vector.y = intersection_array[1];          
-        
+
         // JOS intersektio löytyy, luodaan intersektio-objekti
         if (intersection_array[2] == 1) {
-          intersection_storage.addObject(intersection_vector.x, intersection_vector.y, a, b);  
+          intersection_storage.addObject(intersection_vector.x, intersection_vector.y, a, b, false, false);  
           println(a+" "+b);
         }
-      }    
+      }
     }
   }
 }
@@ -96,24 +98,24 @@ void mouseReleased() {
 class controlLine { 
   PVector start = new PVector();
   PVector end = new PVector();
-  
+
   controlLine ( float s_x, float s_y, float e_x, float e_y) {  
     start.x = s_x; 
     start.y = s_y;
     end.x = e_x;
     end.y = e_y;
   } 
-  
+
   void run() {
     update();
     display();
   }
-  
-  void update() { 
+
+  void update() {
   }
-  
+
   void display() {
-    stroke(255,0,0);
+    stroke(255, 0, 0);
     line(start.x, start.y, end.x, end.y);
   }
 } 
@@ -123,22 +125,29 @@ class controlLine {
 class intersectionObject { 
   PVector coords = new PVector();
   int parent_a, parent_b;
+  boolean startpoint;
+  boolean endpoint;
   
-  intersectionObject ( float x, float y, int a, int b) {  
+  intersectionObject () {  //default constructor for empty instances
+  }
+
+  intersectionObject ( float x, float y, int a, int b, boolean s, boolean e) {  
     coords.x = x;
     coords.y = y;
     parent_a = a;
     parent_b = b;
+    startpoint = s;
+    endpoint = e;
   } 
-  
+
   void run() {
     update();
     display();
   }
-  
-  void update() { 
+
+  void update() {
   }
-  
+
   void display() {
     stroke(0);
     fill(255);
@@ -162,7 +171,7 @@ class controlLineSystem {
   void addObject() {
     objects.add(new controlLine(mouse_clicks[0], mouse_clicks[1], mouse_clicks[2], mouse_clicks[3]));
   }
-  
+
   void run() {
     for (int i = objects.size()-1; i >= 0; i--) {
       controlLine x = objects.get(i);
@@ -180,10 +189,10 @@ class intersectionSystem {
     objects = new ArrayList<intersectionObject>();
   }
 
-  void addObject(float x, float y, int a, int b) {
-    objects.add(new intersectionObject(x, y, a, b));
+  void addObject(float x, float y, int a, int b, boolean s, boolean e) {
+    objects.add(new intersectionObject(x, y, a, b, s, e));
   }
-  
+
   void run() {
     for (int i = objects.size()-1; i >= 0; i--) {
       intersectionObject x = objects.get(i);
@@ -194,10 +203,10 @@ class intersectionSystem {
 
 // Intersektion etsintä (pöllitty koodi)
 
-float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4){
+float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
 
   float a1, a2, b1, b2, c1, c2;
-  float r1, r2 , r3, r4;
+  float r1, r2, r3, r4;
   float denom, offset, num;
   float intersect_x, intersect_y;
   float[] intersection_output = new float[3];
@@ -214,7 +223,7 @@ float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, fl
 
   // Check signs of r3 and r4. If both point 3 and point 4 lie on
   // same side of line 1, the line segments do not intersect.
-  if ((r3 != 0) && (r4 != 0) && same_sign(r3, r4)){
+  if ((r3 != 0) && (r4 != 0) && same_sign(r3, r4)) {
     //return DONT_INTERSECT;
     intersection_output[2] = 0;
     return intersection_output;
@@ -232,7 +241,7 @@ float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, fl
   // Check signs of r1 and r2. If both point 1 and point 2 lie
   // on same side of second line segment, the line segments do
   // not intersect.
-  if ((r1 != 0) && (r2 != 0) && (same_sign(r1, r2))){
+  if ((r1 != 0) && (r2 != 0) && (same_sign(r1, r2))) {
     //return DONT_INTERSECT;
     intersection_output[2] = 0;
     return intersection_output;
@@ -245,10 +254,9 @@ float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, fl
     //return COLLINEAR;
   }
 
-  if (denom < 0){ 
-    offset = -denom / 2; 
-  } 
-  else {
+  if (denom < 0) { 
+    offset = -denom / 2;
+  } else {
     offset = denom / 2 ;
   }
 
@@ -256,18 +264,16 @@ float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, fl
   // is added or subtracted to the numerator, depending upon the
   // sign of the numerator.
   num = (b1 * c2) - (b2 * c1);
-  if (num < 0){
+  if (num < 0) {
     intersect_x = (num - offset) / denom;
-  } 
-  else {
+  } else {
     intersect_x = (num + offset) / denom;
   }
 
   num = (a2 * c1) - (a1 * c2);
-  if (num < 0){
+  if (num < 0) {
     intersect_y = ( num - offset) / denom;
-  } 
-  else {
+  } else {
     intersect_y = (num + offset) / denom;
   }
 
@@ -278,27 +284,96 @@ float[] intersect(float x1, float y1, float x2, float y2, float x3, float y3, fl
   return intersection_output;
 }
 
-boolean same_sign(float a, float b){
+boolean same_sign(float a, float b) {
   return (( a * b) >= 0);
+}
+
+
+//polygoninpiirtofunktio (tilapäinen, objektifisoitava)
+void draw_polygon(intersectionObject point) {
+
+intersectionObject temp_point = new intersectionObject();
+temp_point = point;
+polycoords = new ArrayList<intersectionObject>(); //en oo varma täst, huomioi tämä jos joku kusee
+
+  //lisätään alkupiste listaan, etitään seuraava, ja loopataan kunnes pästään loppuun
+  for(boolean i = true; i == true;) {
+    polycoords.add(temp_point);
+    
+    temp_point = find_next(point);
+    if (temp_point == null) {
+      i = false;
+    } 
+  }
+      //tähän vielä koko paskan piirto
+}
+
+//kontrolliviivalla seuraavan pisteen etsintäfunktio
+intersectionObject find_next(intersectionObject current_point) {
+  
+  intersectionObject next_point = new intersectionObject();
+  PVector current_coords = new PVector(current_point.coords.x, current_point.coords.y); 
+  PVector next_coords = current_coords; 
+  PVector compare_coords = new PVector(); 
+  int current_line;
+
+  //case 1. jos kontrolliviivan päätepiste, lopeta
+  if (current_point.endpoint == true) {
+    return null;
+  } 
+  
+  //case 2. TÄHÄN TARVITAAN VIELÄ KEISSI MISSÄ OLLAAN TULTU YMPYRÄ
+  
+  //case 3. jos polygonin eka piste
+  if (polycoords.size() <= 1) {
+    //etsitään kaikki kyseisen kontrolliviivan intersektiot
+    for (int  i = 0; i < intersection_storage.objects.size(); i++) {
+      if (intersection_storage.objects.get(i).parent_b == current_point.parent_a || intersection_storage.objects.get(i).parent_b == current_point.parent_a) {
+        compare_coords.x = intersection_storage.objects.get(i).coords.x;
+        compare_coords.y = intersection_storage.objects.get(i).coords.y;
+        
+        if (next_coords == current_coords) {
+          next_coords = compare_coords;
+        } 
+        if (dist(current_coords.x, current_coords.y, compare_coords.x, compare_coords.y) < dist(current_coords.x, current_coords.y, next_coords.x, next_coords.y)) {
+          next_coords = compare_coords;
+        }
+      }
+    }
+  }
+  
+  //case 4. jos mikä tahansa muu piste
+  else {
+    //katotaan ensin mikä on nykyinen viiva
+    if (current_point.parent_a == polycoords.get(polycoords.size()-1).parent_a || current_point.parent_a == polycoords.get(polycoords.size()-1).parent_b) {
+      current_line = current_point.parent_b;
+    }
+    if (current_point.parent_b == polycoords.get(polycoords.size()-1).parent_a || current_point.parent_b == polycoords.get(polycoords.size()-1).parent_b) {
+      current_line = current_point.parent_a;
+    }
+    // sitten pitäs vielä ettiä se piste, oikealta
+  }
+
+  return next_point;
 }
 
 
 // Funktio joka tsekkaa kummalla puolella piste on viivaan nähden 
 
 float detect_side(PVector p1, PVector p2, PVector p) {
-    PVector diff = new PVector();
-    PVector perp = new PVector();
-    PVector diff2 = new PVector();
-  
-    diff.x = (p2.x - p1.x);
-    diff.y = (p2.y - p1.y);
-    diff2.x = (p.x - p1.x);
-    diff2.y = (p.y - p1.y);
-    
-    perp.set(-diff.y, diff.x);
-    
-    //float d = dot(p - p1, perp);
-    float d = diff2.dot(perp);
-    
-    return d;
+  PVector diff = new PVector();
+  PVector perp = new PVector();
+  PVector diff2 = new PVector();
+
+  diff.x = (p2.x - p1.x);
+  diff.y = (p2.y - p1.y);
+  diff2.x = (p.x - p1.x);
+  diff2.y = (p.y - p1.y);
+
+  perp.set(-diff.y, diff.x);
+
+  //float d = dot(p - p1, perp);
+  float d = diff2.dot(perp);
+
+  return d;
 }
