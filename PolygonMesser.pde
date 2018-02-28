@@ -52,10 +52,8 @@ void mouseReleased() {
     intersection_storage.addObject(mouse_clicks[2], mouse_clicks[3], line_storage.objects.size()-1, line_storage.objects.size()-1, false, true);
 
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
-    
       int a = line_storage.objects.size()-1;
       for (int b = 0; b < a; b++) {
-        println("a= "+a);
         float[] intersection_array = new float[3];
         PVector intersection_vector = new PVector();
 
@@ -77,7 +75,6 @@ void mouseReleased() {
         // JOS intersektio löytyy, luodaan intersektio-objekti
         if (intersection_array[2] == 1) {
           intersection_storage.addObject(intersection_vector.x, intersection_vector.y, a, b, false, false);
-          print("tic ");
         }
       }
     
@@ -90,9 +87,9 @@ void mouseReleased() {
     intersection_storage.run();
     
     //piirretään polyt
-    //if (intersection_storage.objects.size() > 0) {
-    //  draw_polygon(intersection_storage.objects.get(0));
-    //}
+    if (intersection_storage.objects.size() > 0) {
+      draw_polygon(intersection_storage.objects.get(0));
+    }
   }
 }
 
@@ -332,46 +329,51 @@ polycoords = new ArrayList<intersectionObject>(); //en oo varma täst, huomioi t
 //kontrolliviivalla seuraavan pisteen etsintäfunktio
 intersectionObject find_next(intersectionObject current_point) {
   //println(current_point);  
-  intersectionObject next_point = new intersectionObject(); next_point.coords.set(1000000,1000000); //<>//
-  intersectionObject compare_point = new intersectionObject(); //<>//
-  intersectionObject previous_point = new intersectionObject(); //<>//
+  intersectionObject next_point = new intersectionObject(); next_point.coords.set(1000000,1000000);
+  intersectionObject compare_point = new intersectionObject();
+  intersectionObject previous_point = new intersectionObject();
    //<>//
-  PVector current_coords = new PVector(current_point.coords.x, current_point.coords.y);  //<>//
+  PVector current_coords = new PVector(current_point.coords.x, current_point.coords.y); 
   PVector next_coords = new PVector(1000000, 1000000);  
   PVector compare_coords = new PVector(); 
   PVector previous_coords = new PVector();
-  int current_line; //<>//
+  int current_line;
   float curr_dist, comp_dist;
 
-  //case 1. jos kontrolliviivan päätepiste, lopeta
+  //caset 1. jos kontrolliviivan päätepiste tai alkupiste, lopeta
   if (current_point.endpoint == true) {
     println("END");
     return null;
+  }
+  if (polycoords.size() > 1 && current_point.startpoint == true) {
+    ellipse(current_point.coords.x, current_point.coords.y, 30,30);
+    println("START");
+    return null;
   } 
-   //<>//
+  
   //case 2. TÄHÄN TARVITAAN VIELÄ KEISSI MISSÄ OLLAAN TULTU YMPYRÄ //<>//
    //<>//
   //case 3. jos polygonin eka piste //<>//
   if (polycoords.size() <= 1) {
-      println("etsitään");
+      println("etsitään 1");
     //etsitään kaikki kyseisen kontrolliviivan intersektiot
     for (int  i = 0; i < intersection_storage.objects.size(); i++) {
-      if (intersection_storage.objects.get(i).parent_b == current_point.parent_a || intersection_storage.objects.get(i).parent_b == current_point.parent_a) { //<>//
+      if (intersection_storage.objects.get(i).parent_b == current_point.parent_a || intersection_storage.objects.get(i).parent_b == current_point.parent_a) {
         compare_point = intersection_storage.objects.get(i);
-         //<>//
+
         comp_dist = dist(current_point.coords.x, current_point.coords.y, compare_point.coords.x, compare_point.coords.y); 
-        curr_dist = dist(current_point.coords.x, current_point.coords.y, next_point.coords.x, next_point.coords.y); //<>//
+        curr_dist = dist(current_point.coords.x, current_point.coords.y, next_point.coords.x, next_point.coords.y);
         
         if (comp_dist < curr_dist && current_point.coords != compare_point.coords) {
           next_point = compare_point;
-        } //<>//
-      } //<>//
+        }
+      }
     }
   }
   
   //case 4. jos mikä tahansa muu piste
   else {
-    
+    println("etsitään 2");
     previous_coords = polycoords.get(polycoords.size()-1).coords;   
     
     //katotaan ensin mikä on nykyinen viiva
@@ -379,9 +381,11 @@ intersectionObject find_next(intersectionObject current_point) {
       current_line = current_point.parent_b;
     
       for (int  i = 0; i < intersection_storage.objects.size(); i++) {
+        println(i);
         if (intersection_storage.objects.get(i).parent_b == current_line) {
           compare_point = intersection_storage.objects.get(i);
-          
+          ellipse(compare_point.coords.x, compare_point.coords.x, 50, 50);
+          delay(1000);
           comp_dist = dist(current_point.coords.x, current_point.coords.y, compare_point.coords.x, compare_point.coords.y); 
           curr_dist = dist(current_point.coords.x, current_point.coords.y, next_point.coords.x, next_point.coords.y);
           
@@ -397,7 +401,7 @@ intersectionObject find_next(intersectionObject current_point) {
   }
 
   return next_point;
-} //<>//
+}
 
 
 // Funktio joka tsekkaa kummalla puolella piste on viivaan nähden 
