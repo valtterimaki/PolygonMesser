@@ -26,16 +26,7 @@ void setup() {
 }
 
 void draw() {
-  //tyhjennä ruutu
-  //background(124);
-
-  //piirretään viivat
-  line_storage.run();
-  intersection_storage.run();
-  
-  if (intersection_storage.objects.size() > 0) {
-    draw_polygon(intersection_storage.objects.get(0));
-  }
+  // ei piirretä mitään kokoajan
 }
 
 void mouseReleased() {  
@@ -61,9 +52,10 @@ void mouseReleased() {
     intersection_storage.addObject(mouse_clicks[2], mouse_clicks[3], line_storage.objects.size()-1, line_storage.objects.size()-1, false, true);
 
     // Tässä ajetaan looppi joka tsekkaa risteykset ja lisää ne intersection_listiin
-    for (int  a = 0; a < line_storage.objects.size(); a++) {
-      for (int b = a+1; b < line_storage.objects.size(); b++) {
-
+    
+      int a = line_storage.objects.size()-1;
+      for (int b = 0; b < a; b++) {
+        println("a= "+a);
         float[] intersection_array = new float[3];
         PVector intersection_vector = new PVector();
 
@@ -84,10 +76,23 @@ void mouseReleased() {
 
         // JOS intersektio löytyy, luodaan intersektio-objekti
         if (intersection_array[2] == 1) {
-          intersection_storage.addObject(intersection_vector.x, intersection_vector.y, a, b, false, false);  
+          intersection_storage.addObject(intersection_vector.x, intersection_vector.y, a, b, false, false);
+          print("tic ");
         }
       }
-    }
+    
+    println(intersection_storage.objects.size());
+    //tyhjennetään ruutu
+    background(124);
+    
+    //piirretään viivat
+    line_storage.run();
+    intersection_storage.run();
+    
+    //piirretään polyt
+    //if (intersection_storage.objects.size() > 0) {
+    //  draw_polygon(intersection_storage.objects.get(0));
+    //}
   }
 }
 
@@ -314,15 +319,19 @@ polycoords = new ArrayList<intersectionObject>(); //en oo varma täst, huomioi t
   beginShape();
   for (int i = 0; i < polycoords.size(); i++) {
     vertex(polycoords.get(i).coords.x, polycoords.get(i).coords.y);
-    print(polycoords.get(i).coords+" ");
   }
   endShape();
+
+  fill(20);
+  for (int i = 0; i < polycoords.size(); i++) {
+    ellipse(polycoords.get(i).coords.x, polycoords.get(i).coords.y, 10,10);
+  }
 
 }
 
 //kontrolliviivalla seuraavan pisteen etsintäfunktio
 intersectionObject find_next(intersectionObject current_point) {
-  println(current_point);  
+  //println(current_point);  
   intersectionObject next_point = new intersectionObject(); next_point.coords.set(1000000,1000000); //<>//
   intersectionObject compare_point = new intersectionObject(); //<>//
   intersectionObject previous_point = new intersectionObject(); //<>//
@@ -336,7 +345,7 @@ intersectionObject find_next(intersectionObject current_point) {
 
   //case 1. jos kontrolliviivan päätepiste, lopeta
   if (current_point.endpoint == true) {
-    print("SHIT");
+    println("END");
     return null;
   } 
    //<>//
@@ -344,6 +353,7 @@ intersectionObject find_next(intersectionObject current_point) {
    //<>//
   //case 3. jos polygonin eka piste //<>//
   if (polycoords.size() <= 1) {
+      println("etsitään");
     //etsitään kaikki kyseisen kontrolliviivan intersektiot
     for (int  i = 0; i < intersection_storage.objects.size(); i++) {
       if (intersection_storage.objects.get(i).parent_b == current_point.parent_a || intersection_storage.objects.get(i).parent_b == current_point.parent_a) { //<>//
